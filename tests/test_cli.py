@@ -7,7 +7,7 @@ from pathlib import Path
 from typer.testing import CliRunner
 
 from quant_data import cli, downloader, service, storage
-from quant_data.models import DatasetKey, ExchangeConfig, LoadedConfig
+from quant_data.models import DatasetKey, ExchangeConfig, LoadedConfig, SkillInstallResult
 from tests.conftest import FakeExchange, candle, stored_row
 
 runner = CliRunner()
@@ -277,6 +277,7 @@ def test_capabilities_and_config_show_commands_support_human_and_json(config, mo
             "remove",
             "capabilities",
             "config show",
+            "install skill",
         ],
         "library_api": ["quant_data.Candles.load"],
     }
@@ -293,4 +294,37 @@ def test_capabilities_and_config_show_commands_support_human_and_json(config, mo
         "data_path": str(config.data_path),
         "gap_warning_threshold": 30,
         "exchanges": {"binance": {"type": "spot"}, "bybit": {"type": "spot"}},
+    }
+
+
+def test_install_skill_command_supports_human_and_json(tmp_path: Path, monkeypatch) -> None:
+    result_payload = SkillInstallResult(
+        runtime_root=tmp_path / ".codex",
+        skill_name="quant-data",
+        skill_source=Path("skills/quant-data").resolve(),
+        skills_dest=tmp_path / ".codex" / "skills" / "quant-data",
+        files_copied=2,
+        codex=True,
+        agents_config_path=tmp_path / ".codex" / "agents" / "quant-data.yaml",
+    )
+    monkeypatch.setattr(cli, "install_skill", lambda runtime_root, codex=False: result_payload)
+
+    result = runner.invoke(cli.app, ["install", "skill", str(tmp_path / ".codex"), "--codex"])
+    json_result = runner.invoke(
+        cli.app,
+        ["install", "skill", str(tmp_path / ".codex"), "--codex", "--json"],
+    )
+
+    assert result.exit_code == 0
+    assert "Installed skill 'quant-data'" in result.stdout
+    assert "Installed Codex agents config" in result.stdout
+    assert json_result.exit_code == 0
+    assert _extract_json(json_result.stdout) == {
+        "runtime_root": str(tmp_path / ".codex"),
+        "skill_name": "quant-data",
+        "skill_source": str(Path("skills/quant-data").resolve()),
+        "skills_dest": str(tmp_path / ".codex" / "skills" / "quant-data"),
+        "files_copied": 2,
+        "codex": True,
+        "agents_config_path": str(tmp_path / ".codex" / "agents" / "quant-data.yaml"),
     }

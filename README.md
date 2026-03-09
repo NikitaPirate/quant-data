@@ -23,6 +23,22 @@ uv tool install git+ssh://git@github.com/NikitaPirate/quant-data.git
 qd --help
 ```
 
+Install the bundled skill into a runtime root:
+
+```bash
+qd install skill ~/.claude
+qd install skill ~/.openclaw
+qd install skill ~/.codex --codex
+```
+
+`<runtime-root>` can also be relative to the current working directory, for example:
+
+```bash
+qd install skill .codex --codex
+```
+
+Use `--codex` only for Codex runtimes, where the tool must also write the extra agents metadata file.
+
 Library from the current directory:
 
 ```bash
@@ -106,6 +122,9 @@ Every CLI command has two output modes:
 ```bash
 qd config show
 qd capabilities
+qd install skill ~/.claude
+qd install skill ~/.openclaw
+qd install skill ~/.codex --codex
 qd list
 qd markets --exchange binance --quote USDT
 qd download --exchange binance --symbol BTC/USDT --timeframe 1m --from 2024-01-01 --to 2024-01-31
@@ -119,6 +138,8 @@ Agent-oriented introspection:
 ```bash
 qd config show --json
 qd capabilities --json
+qd install skill ~/.claude --json
+qd install skill ~/.codex --codex --json
 qd list --json
 ```
 

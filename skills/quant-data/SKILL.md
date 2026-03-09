@@ -17,6 +17,8 @@ Use these commands first when support boundaries or config location matter:
 
 - `uv run qd capabilities --json`
 - `uv run qd config show --json`
+- `uv run qd install skill ~/.claude --json`
+- `uv run qd install skill ~/.codex --codex --json`
 
 Use the default human-readable output when the user should be able to visually verify the result. Use `--json` when another agent step needs machine-readable output.
 
@@ -41,6 +43,7 @@ Do not maintain a handwritten list of supported exchanges in the answer. Read `c
 
 - `uv run qd config show [--json]`
 - `uv run qd capabilities [--json]`
+- `uv run qd install skill <runtime-root> [--codex] [--json]`
 - `uv run qd list [--exchange <id>] [--symbol <symbol>] [--json]`
 - `uv run qd markets --exchange <id> [--quote <quote>] [--base <base>] [--json]`
 - `uv run qd download --exchange <id> --symbol <symbol> --timeframe <tf> [--from <date>] [--to <date>] [--json]`
@@ -49,6 +52,9 @@ Do not maintain a handwritten list of supported exchanges in the answer. Read `c
 - `uv run qd remove --exchange <id> --symbol <symbol> [--timeframe <tf>] [--from <date>] [--to <date>] [--json]`
 
 `qd remove` is interactive and asks for confirmation.
+`qd install skill` copies the bundled skill into `<runtime-root>/skills/quant-data`.
+Use `--codex` only for Codex runtimes; it also writes `<runtime-root>/agents/quant-data.yaml`.
+`<runtime-root>` may be absolute, home-relative like `~/.claude`, or relative to the current working directory like `.codex`.
 
 ## Python API
 

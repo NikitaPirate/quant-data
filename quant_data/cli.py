@@ -14,12 +14,16 @@ from quant_data.models import (
     GapWarning,
     LoadedConfig,
     MarketInfo,
+    SkillInstallResult,
 )
+from quant_data.skill_install import SkillInstallError, install_skill
 from quant_data.utils import utc_date_string, utc_datetime_string
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 config_app = typer.Typer(no_args_is_help=True, add_completion=False)
+install_app = typer.Typer(no_args_is_help=True, add_completion=False)
 app.add_typer(config_app, name="config")
+app.add_typer(install_app, name="install")
 
 
 def main() -> None:
@@ -132,6 +136,20 @@ def _capabilities_payload(capabilities: CapabilityInfo) -> dict[str, object]:
     }
 
 
+def _skill_install_payload(result: SkillInstallResult) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "runtime_root": str(result.runtime_root),
+        "skill_name": result.skill_name,
+        "skill_source": str(result.skill_source),
+        "skills_dest": str(result.skills_dest),
+        "files_copied": result.files_copied,
+        "codex": result.codex,
+    }
+    if result.agents_config_path is not None:
+        payload["agents_config_path"] = str(result.agents_config_path)
+    return payload
+
+
 def _print_config_summary(console: Console, details: LoadedConfig) -> None:
     table = Table("field", "value")
     table.add_row("config_source", details.config_source)
@@ -172,6 +190,13 @@ def _print_capabilities_summary(console: Console, capabilities: CapabilityInfo) 
     for exchange_id, exchange_type in capabilities.configured_exchanges.items():
         exchange_table.add_row(exchange_id, exchange_type)
     console.print(exchange_table)
+
+
+def _print_skill_install_summary(console: Console, result: SkillInstallResult) -> None:
+    console.print(f"Installed skill '{result.skill_name}' to {result.skills_dest}")
+    console.print(f"Copied {result.files_copied} files from {result.skill_source}")
+    if result.agents_config_path is not None:
+        console.print(f"Installed Codex agents config to {result.agents_config_path}")
 
 
 @app.command("list")
@@ -388,3 +413,23 @@ def config_show_command(
         return
 
     _print_config_summary(console, details)
+
+
+@install_app.command("skill")
+def install_skill_command(
+    runtime_root: str = typer.Argument(...),
+    codex: bool = typer.Option(False, "--codex"),
+    json_output: bool = typer.Option(False, "--json"),
+) -> None:
+    console = Console()
+    try:
+        result = install_skill(runtime_root, codex=codex)
+    except SkillInstallError as error:
+        console.print(str(error))
+        raise typer.Exit(code=1) from error
+
+    if json_output:
+        _print_json(console, _skill_install_payload(result))
+        return
+
+    _print_skill_install_summary(console, result)

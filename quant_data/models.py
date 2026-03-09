@@ -99,6 +99,17 @@ class CapabilityInfo:
     library_api: list[str]
 
 
+@dataclass(frozen=True)
+class SkillInstallResult:
+    runtime_root: Path
+    skill_name: str
+    skill_source: Path
+    skills_dest: Path
+    files_copied: int
+    codex: bool
+    agents_config_path: Path | None = None
+
+
 class ExchangeProtocol(Protocol):
     def load_markets(self) -> dict[str, dict[str, Any]]: ...
 

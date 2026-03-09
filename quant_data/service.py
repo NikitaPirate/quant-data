@@ -40,6 +40,7 @@ CLI_COMMANDS = [
     "remove",
     "capabilities",
     "config show",
+    "install skill",
 ]
 CLI_OUTPUT_FORMATS = ["human", "json"]
 LIBRARY_API = ["quant_data.Candles.load"]
