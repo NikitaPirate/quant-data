@@ -1,0 +1,8 @@
+storage_path = "./.quant-data/storage"
+gap_warning_threshold = 30
+
+[exchanges.binance]
+type = "spot"
+
+[exchanges.bybit]
+type = "spot"

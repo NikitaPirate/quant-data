@@ -1,0 +1,43 @@
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "quant-data"
+version = "0.1.0"
+description = "CLI and Python API for OHLCV data loading, storage, and maintenance."
+readme = "README.md"
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "ccxt>=4.5.20",
+    "pandas>=2.3.3",
+    "pyarrow>=23.0.0",
+    "rich>=14.2.0",
+    "typer>=0.20.0",
+]
+
+[project.scripts]
+qd = "quant_data.cli:main"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.3.0",
+    "pyright>=1.1.406",
+    "pytest>=8.4.2",
+    "ruff>=0.13.0",
+]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.pyright]
+pythonVersion = "3.14"
+typeCheckingMode = "basic"
+reportMissingTypeStubs = false
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

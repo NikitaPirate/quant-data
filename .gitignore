@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.pyright/
+.ruff_cache/
+.quant-data/
+config.local.toml
+*.pyc
