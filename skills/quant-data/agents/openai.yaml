@@ -1,0 +1,4 @@
+interface:
+  display_name: "Quant Data"
+  short_description: "quant-data CLI and library workflow"
+  default_prompt: "Use $quant-data to inspect, configure, or operate the quant-data CLI and library."

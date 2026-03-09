@@ -4,7 +4,7 @@ import os
 import tomllib
 from pathlib import Path
 
-from quant_data.models import AppConfig, ExchangeConfig
+from quant_data.models import AppConfig, ConfigSource, DataPathMode, ExchangeConfig, LoadedConfig
 
 QD_HOME = Path("~/.qd").expanduser()
 GLOBAL_CONFIG_PATH = QD_HOME / "qd_config.toml"
@@ -17,7 +17,11 @@ class ConfigError(ValueError):
 
 
 def load_config(config_path: str | Path | None = None) -> AppConfig:
-    configured_path = _discover_config_path(config_path)
+    return load_config_details(config_path).config
+
+
+def load_config_details(config_path: str | Path | None = None) -> LoadedConfig:
+    configured_path, config_source = _discover_config_path(config_path)
 
     raw_config: dict[str, object] = {}
     if configured_path.is_file():
@@ -47,26 +51,37 @@ def load_config(config_path: str | Path | None = None) -> AppConfig:
         else 30
     )
 
-    return AppConfig(
-        data_path=_resolve_data_path(data_path_value, configured_path),
-        gap_warning_threshold=gap_warning_threshold,
-        exchanges=exchanges,
+    data_path, data_path_mode = _resolve_data_path(data_path_value, configured_path)
+
+    return LoadedConfig(
+        config=AppConfig(
+            data_path=data_path,
+            gap_warning_threshold=gap_warning_threshold,
+            exchanges=exchanges,
+        ),
+        config_path=configured_path,
+        config_source=config_source,
+        config_exists=configured_path.is_file(),
+        data_path_mode=data_path_mode,
     )
 
 
-def _discover_config_path(config_path: str | Path | None) -> Path:
+def _discover_config_path(config_path: str | Path | None) -> tuple[Path, ConfigSource]:
     if config_path is not None:
-        return Path(config_path).expanduser().resolve()
+        return Path(config_path).expanduser().resolve(), "explicit"
 
     env_path = os.environ.get("QD_CONFIG")
     if env_path:
-        return Path(env_path).expanduser().resolve()
+        return Path(env_path).expanduser().resolve(), "env"
 
     local_config = _find_local_config()
     if local_config is not None:
-        return local_config
+        return local_config, "local"
 
-    return GLOBAL_CONFIG_PATH.resolve()
+    global_config = GLOBAL_CONFIG_PATH.resolve()
+    if global_config.is_file():
+        return global_config, "global"
+    return global_config, "defaults"
 
 
 def _find_local_config(start_dir: Path | None = None) -> Path | None:
@@ -78,21 +93,21 @@ def _find_local_config(start_dir: Path | None = None) -> Path | None:
     return None
 
 
-def _resolve_data_path(raw_value: str, config_path: Path) -> Path:
+def _resolve_data_path(raw_value: str, config_path: Path) -> tuple[Path, DataPathMode]:
     if raw_value == "global":
-        return GLOBAL_DATA_PATH.resolve()
+        return GLOBAL_DATA_PATH.resolve(), "global"
 
     if raw_value == "local":
         if _is_global_config_path(config_path):
             raise ConfigError(
                 "data_path='local' is not allowed in the global ~/.qd/qd_config.toml."
             )
-        return (config_path.parent / ".qd" / "data").resolve()
+        return (config_path.parent / ".qd" / "data").resolve(), "local"
 
     explicit_path = Path(raw_value).expanduser()
     if not explicit_path.is_absolute():
         raise ConfigError("data_path must be 'global', 'local', or an absolute path.")
-    return explicit_path.resolve()
+    return explicit_path.resolve(), "absolute"
 
 
 def _is_global_config_path(config_path: Path) -> bool:

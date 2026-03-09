@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from quant_data import config as config_module
-from quant_data.config import ConfigError, load_config
+from quant_data.config import ConfigError, load_config, load_config_details
 
 
 def test_explicit_config_path_beats_env_and_local(monkeypatch, tmp_path: Path) -> None:
@@ -25,8 +25,11 @@ def test_explicit_config_path_beats_env_and_local(monkeypatch, tmp_path: Path) -
     monkeypatch.setenv("QD_CONFIG", str(env_config))
 
     loaded = load_config(explicit_config)
+    details = load_config_details(explicit_config)
 
     assert loaded.data_path == (workspace / ".qd" / "data").resolve()
+    assert details.config_source == "explicit"
+    assert details.data_path_mode == "local"
 
 
 def test_env_config_beats_local_and_global(monkeypatch, tmp_path: Path) -> None:
@@ -49,8 +52,11 @@ def test_env_config_beats_local_and_global(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setenv("QD_CONFIG", str(env_config))
 
     loaded = load_config()
+    details = load_config_details()
 
     assert loaded.data_path == Path("/tmp/env-data").resolve()
+    assert details.config_source == "env"
+    assert details.data_path_mode == "absolute"
 
 
 def test_nearest_local_config_is_preferred(monkeypatch, tmp_path: Path) -> None:
@@ -72,8 +78,11 @@ def test_nearest_local_config_is_preferred(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.delenv("QD_CONFIG", raising=False)
 
     loaded = load_config()
+    details = load_config_details()
 
     assert loaded.data_path == (child / ".qd" / "data").resolve()
+    assert details.config_source == "local"
+    assert details.data_path_mode == "local"
 
 
 def test_builtin_defaults_use_global_qd_home(monkeypatch, tmp_path: Path) -> None:
@@ -88,8 +97,11 @@ def test_builtin_defaults_use_global_qd_home(monkeypatch, tmp_path: Path) -> Non
     monkeypatch.delenv("QD_CONFIG", raising=False)
 
     loaded = load_config()
+    details = load_config_details()
 
     assert loaded.data_path == global_data.resolve()
+    assert details.config_source == "defaults"
+    assert not details.config_exists
 
 
 def test_absolute_data_path_is_used_as_is(tmp_path: Path) -> None:

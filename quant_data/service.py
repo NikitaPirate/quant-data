@@ -10,6 +10,7 @@ from rich.progress import BarColumn, Progress, TaskProgressColumn, TextColumn, T
 from quant_data import downloader, storage, utils
 from quant_data.models import (
     AppConfig,
+    CapabilityInfo,
     DatasetInfo,
     DatasetKey,
     DownloadStats,
@@ -18,6 +19,30 @@ from quant_data.models import (
     MarketInfo,
     TimeRange,
 )
+
+SUPPORTED_DATA_FLOWS = ["candles"]
+SUPPORTED_MARKET_TYPES = ["spot"]
+UNSUPPORTED_DATA_FLOWS = [
+    "trades",
+    "orderbook",
+    "funding",
+    "open-interest",
+    "liquidations",
+    "websocket-live",
+]
+UNSUPPORTED_MARKET_TYPES = ["futures", "swap", "options"]
+CLI_COMMANDS = [
+    "list",
+    "markets",
+    "download",
+    "update",
+    "check",
+    "remove",
+    "capabilities",
+    "config show",
+]
+CLI_OUTPUT_FORMATS = ["human", "json"]
+LIBRARY_API = ["quant_data.Candles.load"]
 
 
 def list_datasets(
@@ -65,6 +90,26 @@ def list_markets(
             )
         )
     return sorted(items, key=lambda item: item.symbol)
+
+
+def describe_capabilities(config: AppConfig) -> CapabilityInfo:
+    return CapabilityInfo(
+        supported_data_flows=SUPPORTED_DATA_FLOWS.copy(),
+        supported_market_types=SUPPORTED_MARKET_TYPES.copy(),
+        configured_exchanges={
+            exchange_id: exchange_config.type
+            for exchange_id, exchange_config in sorted(config.exchanges.items())
+        },
+        exchange_support_model=(
+            "Attempt any CCXT exchange id in spot mode. A dataset is supported only when the "
+            "exchange provides spot OHLCV through fetch_ohlcv."
+        ),
+        unsupported_data_flows=UNSUPPORTED_DATA_FLOWS.copy(),
+        unsupported_market_types=UNSUPPORTED_MARKET_TYPES.copy(),
+        cli_output_formats=CLI_OUTPUT_FORMATS.copy(),
+        commands=CLI_COMMANDS.copy(),
+        library_api=LIBRARY_API.copy(),
+    )
 
 
 def plan_missing_ranges(

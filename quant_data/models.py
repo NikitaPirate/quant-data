@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Literal, Protocol
 
 CANDLE_COLUMNS = ["ts", "open", "high", "low", "close", "volume"]
 
@@ -71,6 +71,32 @@ class MarketInfo:
     base: str
     quote: str
     type: str
+
+
+ConfigSource = Literal["explicit", "env", "local", "global", "defaults"]
+DataPathMode = Literal["global", "local", "absolute"]
+
+
+@dataclass(frozen=True)
+class LoadedConfig:
+    config: AppConfig
+    config_path: Path
+    config_source: ConfigSource
+    config_exists: bool
+    data_path_mode: DataPathMode
+
+
+@dataclass(frozen=True)
+class CapabilityInfo:
+    supported_data_flows: list[str]
+    supported_market_types: list[str]
+    configured_exchanges: dict[str, str]
+    exchange_support_model: str
+    unsupported_data_flows: list[str]
+    unsupported_market_types: list[str]
+    cli_output_formats: list[str]
+    commands: list[str]
+    library_api: list[str]
 
 
 class ExchangeProtocol(Protocol):

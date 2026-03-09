@@ -98,13 +98,28 @@ Invalid configurations:
 
 ## CLI
 
+Every CLI command has two output modes:
+
+- default human-readable output
+- `--json` machine-readable output
+
 ```bash
+qd config show
+qd capabilities
 qd list
 qd markets --exchange binance --quote USDT
 qd download --exchange binance --symbol BTC/USDT --timeframe 1m --from 2024-01-01 --to 2024-01-31
 qd update --exchange binance
 qd check --exchange binance --symbol BTC/USDT --timeframe 1m
 qd remove --exchange binance --symbol BTC/USDT --timeframe 1m
+```
+
+Agent-oriented introspection:
+
+```bash
+qd config show --json
+qd capabilities --json
+qd list --json
 ```
 
 ## Python API
