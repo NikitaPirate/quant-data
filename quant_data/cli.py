@@ -5,7 +5,7 @@ from rich.console import Console
 from rich.table import Table
 
 from quant_data import service
-from quant_data.config import load_config
+from quant_data.config import ConfigError, load_config
 from quant_data.utils import utc_date_string, utc_datetime_string
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
@@ -15,13 +15,21 @@ def main() -> None:
     app()
 
 
+def _load_app_config(console: Console):
+    try:
+        return load_config()
+    except ConfigError as error:
+        console.print(str(error))
+        raise typer.Exit(code=1) from error
+
+
 @app.command("list")
 def list_command(
     exchange: str | None = typer.Option(None, "--exchange"),
     symbol: str | None = typer.Option(None, "--symbol"),
 ) -> None:
     console = Console()
-    items = service.list_datasets(load_config(), exchange=exchange, symbol=symbol)
+    items = service.list_datasets(_load_app_config(console), exchange=exchange, symbol=symbol)
     if not items:
         console.print("No local datasets found.")
         return
@@ -47,7 +55,7 @@ def markets_command(
     base: str | None = typer.Option(None, "--base"),
 ) -> None:
     console = Console()
-    items = service.list_markets(load_config(), exchange, quote=quote, base=base)
+    items = service.list_markets(_load_app_config(console), exchange, quote=quote, base=base)
     if not items:
         console.print("No markets found.")
         return
@@ -69,7 +77,7 @@ def download_command(
     console = Console()
     try:
         stats = service.download_dataset(
-            load_config(),
+            _load_app_config(console),
             exchange,
             symbol,
             timeframe,
@@ -95,7 +103,7 @@ def update_command(
 ) -> None:
     console = Console()
     results = service.update_datasets(
-        load_config(),
+        _load_app_config(console),
         exchange=exchange,
         symbol=symbol,
         show_progress=True,
@@ -125,7 +133,7 @@ def check_command(
 ) -> None:
     console = Console()
     items = service.check_datasets(
-        load_config(),
+        _load_app_config(console),
         exchange=exchange,
         symbol=symbol,
         timeframe=timeframe,
@@ -163,7 +171,7 @@ def remove_command(
 
     try:
         removed_rows = service.remove_datasets(
-            load_config(),
+            _load_app_config(console),
             exchange=exchange,
             symbol=symbol,
             timeframe=timeframe,

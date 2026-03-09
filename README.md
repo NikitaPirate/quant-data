@@ -41,10 +41,10 @@ from quant_data import Candles
 
 ## Storage
 
-By default, data is stored in `~/.quant-data/storage` as yearly Parquet files:
+By default, global data is stored in `~/.qd/data` as yearly Parquet files:
 
 ```text
-~/.quant-data/storage/
+~/.qd/data/
 `-- <exchange>/
     `-- <symbol>/
         `-- <timeframe>/
@@ -66,17 +66,35 @@ System invariant: locally stored data stays continuous and gap-free. If the exch
 
 ## Configuration
 
-The project reads `~/.quant-data/config.toml` by default, or the path from `QUANT_DATA_CONFIG`.
-For repo-local runs, copy `config.example.toml` to `config.local.toml` and point
-`QUANT_DATA_CONFIG` to it.
+Config discovery order is:
+
+1. explicit config path passed to the loader
+2. `QD_CONFIG`
+3. nearest `qd_config.toml` found by walking upward from the current working directory
+4. global `~/.qd/qd_config.toml`
+5. built-in defaults
+
+For repo-local runs, copy `qd_config.example.toml` to `qd_config.toml`. If the file is in the
+current working directory or one of its parents, no environment variable is required.
 
 ```toml
-storage_path = "~/.quant-data/storage"
+data_path = "global"
 gap_warning_threshold = 30
 
 [exchanges.binance]
 type = "spot"
 ```
+
+`data_path` accepts exactly:
+
+- `global` -> `~/.qd/data`
+- `local` -> `.qd/data` next to the active local `qd_config.toml`
+- an absolute path
+
+Invalid configurations:
+
+- `data_path = "local"` inside the global `~/.qd/qd_config.toml`
+- any relative explicit path such as `./data`
 
 ## CLI
 

@@ -60,4 +60,4 @@ class FakeExchange:
 
 @pytest.fixture
 def config(tmp_path: Path) -> AppConfig:
-    return AppConfig(storage_path=tmp_path / "storage", gap_warning_threshold=30, exchanges={})
+    return AppConfig(data_path=tmp_path / "storage", gap_warning_threshold=30, exchanges={})

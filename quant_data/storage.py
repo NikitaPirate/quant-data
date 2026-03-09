@@ -25,7 +25,7 @@ def _empty_frame() -> pd.DataFrame:
 
 
 def dataset_dir(config: AppConfig, key: DatasetKey) -> Path:
-    return config.storage_path / key.exchange / symbol_to_storage_name(key.symbol) / key.timeframe
+    return config.data_path / key.exchange / symbol_to_storage_name(key.symbol) / key.timeframe
 
 
 def notes_path(config: AppConfig, key: DatasetKey) -> Path:
@@ -72,10 +72,10 @@ def _normalize_frame(frame: pd.DataFrame) -> pd.DataFrame:
 
 def list_dataset_keys(config: AppConfig) -> list[DatasetKey]:
     keys: list[DatasetKey] = []
-    if not config.storage_path.exists():
+    if not config.data_path.exists():
         return keys
 
-    for exchange_dir in sorted(path for path in config.storage_path.iterdir() if path.is_dir()):
+    for exchange_dir in sorted(path for path in config.data_path.iterdir() if path.is_dir()):
         for symbol_dir in sorted(path for path in exchange_dir.iterdir() if path.is_dir()):
             for timeframe_dir in sorted(path for path in symbol_dir.iterdir() if path.is_dir()):
                 has_parquet = any(path.suffix == ".parquet" for path in timeframe_dir.iterdir())

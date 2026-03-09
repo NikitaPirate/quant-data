@@ -1,4 +1,4 @@
-storage_path = "./.quant-data/storage"
+data_path = "local"
 gap_warning_threshold = 30
 
 [exchanges.binance]

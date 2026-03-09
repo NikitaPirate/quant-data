@@ -14,7 +14,7 @@ class ExchangeConfig:
 
 @dataclass(frozen=True)
 class AppConfig:
-    storage_path: Path
+    data_path: Path
     gap_warning_threshold: int
     exchanges: dict[str, ExchangeConfig]
 

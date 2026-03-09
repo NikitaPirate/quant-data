@@ -3,6 +3,8 @@ __pycache__/
 .pytest_cache/
 .pyright/
 .ruff_cache/
+.qd/
 .quant-data/
+qd_config.toml
 config.local.toml
 *.pyc
