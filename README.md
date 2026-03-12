@@ -19,7 +19,7 @@ qd --help
 CLI from GitHub:
 
 ```bash
-uv tool install git+ssh://git@github.com/NikitaPirate/quant-data.git
+uv tool install git+https://github.com/NikitaPirate/quant-data.git
 qd --help
 ```
 
@@ -48,7 +48,7 @@ uv add .
 Library from GitHub:
 
 ```bash
-uv add git+ssh://git@github.com/NikitaPirate/quant-data.git
+uv add git+https://github.com/NikitaPirate/quant-data.git
 ```
 
 ```python
@@ -62,7 +62,7 @@ By default, global data is stored in `~/.qd/data` as yearly Parquet files:
 ```text
 ~/.qd/data/
 `-- <exchange>/
-    `-- <symbol>/
+    `-- <symbol-with-slashes-replaced-by-dashes>/
         `-- <timeframe>/
             |-- 2022.parquet
             |-- 2023.parquet
@@ -78,7 +78,7 @@ Candle schema:
 - `close`
 - `volume`
 
-System invariant: locally stored data stays continuous and gap-free. If the exchange still does not return missing candles after a retry, the gap is filled with linear interpolation. Interpolations longer than the warning threshold are also recorded in `notes.json`.
+Downloaded ranges are repaired to stay gap-free. If the exchange still does not return missing candles after a retry, the gap is filled with linear interpolation. Interpolations longer than the warning threshold are also recorded in `notes.json`. Partial `qd remove` operations can intentionally create gaps again.
 
 ## Configuration
 
@@ -105,7 +105,7 @@ type = "spot"
 
 - `global` -> `~/.qd/data`
 - `local` -> `.qd/data` next to the active local `qd_config.toml`
-- an absolute path
+- a home-relative or absolute path such as `~/qd-data`
 
 Invalid configurations:
 
