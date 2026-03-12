@@ -1,11 +1,12 @@
 # quant-data
 
-Standalone tooling for downloading, storing, and maintaining OHLCV data on top of ccxt.
+Utility, library, and bundled agent skill for local OHLCV storage on top of ccxt: download data once and then reuse it across projects without repeated loading.
 
-The project has two parts:
+The project has three parts:
 
 - CLI `qd` for preparing and maintaining local data: download, update, inspect, and remove.
 - Python API `Candles` for notebooks and backtests: request data and get a `DataFrame`, with missing ranges downloaded automatically when needed.
+- Bundled agent skill for installing the `quant-data` workflow into supported runtimes.
 
 ## Installation
 
